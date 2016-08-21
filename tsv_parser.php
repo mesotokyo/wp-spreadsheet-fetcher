@@ -9,18 +9,16 @@ class TSVParser {
 		$this->_parse_tsv($content, $key_row, $start_row, $end_row);
 	}
 	
-	function _parse_tsv($tsv, $key_row=0, $start_row=0, $end_row=0) {
+	function _parse_tsv($tsv, $opts) {
 		$rows = explode("\n", $tsv);
 		$row_size = count($rows);
-		if ($key_row > 0) {
-			$keys = explode("\t", trim($rows[$key_row-1]));
+		if ($opts["key_row"] > 0) {
+			$keys = explode("\t", trim($rows[$opts["key_row"]-1]));
 		}
 		$result = array();
-		if ($start_row > 0) {
-			$start_row = $start_row - 1;
-		}
+        $start_row = ($opts["start_row"] > 0) ? $opts["start_row"] - 1 : 0;
 		for ($i = $start_row; $i < $row_size; $i++) {
-			if ($key_row > 0) { 
+			if ($opts["key_row"] > 0) { 
 				// use key
 				$items = array();
 				$values = explode("\t", trim($rows[$i]));
