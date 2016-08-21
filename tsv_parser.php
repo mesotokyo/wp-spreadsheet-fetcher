@@ -60,7 +60,8 @@ class TSVParser {
 				if (isset($vars[$var_name])) {
 					return $vars[$var_name];
 				} else {
-					return $matches[0];
+					//return $matches[0];
+					return "";
 				}
 			},
 			$template);
