@@ -1,4 +1,5 @@
 <?php
+$HIDDEN_FIELD_NAME = 'spsf_hidden';
 
 function show_sheets_tables() {
 	//$lt = new Sheets_List_table();
@@ -20,8 +21,8 @@ function show_sheets_tables() {
 EOF;
 	echo($head);
 	foreach ($sheets as $sheet) {
-		$edit_url = admin_url("admin.php?page=sps-fetcher-edit-sps&action=edit&slug=$sheet->slug");
-		$delete_url = admin_url("admin.php?page=sps-fetcher-edit-sps&action=delete&slug=$sheet->slug");
+		$edit_url = admin_url("admin.php?page=sps-fetcher-edit-page&action=edit&slug=$sheet->slug");
+		$delete_url = admin_url("admin.php?page=sps-fetcher-edit-page&action=delete&slug=$sheet->slug");
 
 		$row = <<<EOF
 <tr>
@@ -87,7 +88,7 @@ class Sheets_List_table extends WP_List_Table {
 	<hr>
 
   <form name="spsf-main-form" method="post" action="">
-    <input type="hidden" name="<?php echo $hidden_field_name; ?>" value="Y">
+    <input type="hidden" name="<?php echo $HIDDEN_FIELD_NAME; ?>" value="Y">
 
     <p class="submit">
       <input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />

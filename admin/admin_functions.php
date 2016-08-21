@@ -13,14 +13,16 @@ function spsf_install() {
 
 	$sql = <<<SQL_END
 		CREATE TABLE $table_name (
-		  id          INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-		  slug        VARCHAR(128) NOT NULL UNIQUE,
-		  title TEXT,
-		  description TEXT,
-		  source_type VARCHAR(128) NOT NULL,
-		  source      TEXT NOT NULL,
-		  template    TEXT,
-          options     TEXT,
+		  id                 INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+		  slug               VARCHAR(128) NOT NULL UNIQUE,
+		  title              TEXT,
+		  description        TEXT,
+		  source_type        VARCHAR(128) NOT NULL,
+		  source             TEXT NOT NULL,
+		  template_header    TEXT,
+		  template_body      TEXT,
+		  template_footer    TEXT,
+          options            TEXT,
 		  PRIMARY KEY  (id)
 		) $charset_collate;
 SQL_END;

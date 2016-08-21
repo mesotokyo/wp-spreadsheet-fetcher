@@ -1,13 +1,36 @@
 <?php
 
+$ACCEPTABLE_KEYS = explode(" ", "id slug title description source_type source template_header template_body template_footer options");
+$ACCEPTABLE_KEYS_NOID = explode(" ", "slug title description source_type source template_header template_body template_footer options");
+$HIDDEN_FIELD_NAME = 'spsf_hidden';
+
+require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/tsv_parser.php" );
+
+function create_preview($sheet) {
+	$parser = new TSVParser();
+	$opts = array();
+	$row_opts = explode(',', $sheet["options"]);
+	foreach($row_opts as $opt) {
+		$kv = explode('=', $opt, 2);
+		$opts[$kv[0]] = $kv[1];
+	}
+	$key_row = $opts["key"] ? $opts["key"] : 0;
+	$start_row = $opts["start"] ? $opts["start"] : 0;
+	$end_row = $opts["end"] ? $opts["end"] : 0;
+		
+	$parser->load($sheet["source"], $key_row, $start_row, $end_row);
+	$result = $parser->render($sheet["template_body"]);
+	return $result;
+}
+
 function add_sps($sheet) {
+	global $ACCEPTABLE_KEYS_NOID;
 	global $wpdb;
 	$table_name = $wpdb->prefix . "spsfetcher";
 	$data = array();
 
 	// check integrity
-	$acceptable_keys = explode(" ", "slug title description source_type source template options");
-	foreach ($acceptable_keys as $key) {
+	foreach ($ACCEPTABLE_KEYS_NOID as $key) {
 		if($sheet[$key]) {
 			$data[$key] = $sheet[$key];
 		}
@@ -17,13 +40,13 @@ function add_sps($sheet) {
 }
 
 function update_sps($sheet) {
+	global $ACCEPTABLE_KEYS_NOID;
 	global $wpdb;
 	$table_name = $wpdb->prefix . "spsfetcher";
 	$data = array();
 
 	// check integrity
-	$acceptable_keys = explode(" ", "slug title description source_type source template options");
-	foreach ($acceptable_keys as $key) {
+	foreach ($ACCEPTABLE_KEYS_NOID as $key) {
 		if($sheet[$key]) {
 			$data[$key] = $sheet[$key];
 		}
@@ -55,68 +78,112 @@ function sps_fetcher_menu() {
 					 'Add Spreadsheet',
 					 'Add Spreadsheet',
 					 'manage_options',
-					 'sps-fetcher-edit-sps',
-					 'sps_fetcher_edit_sps');
+					 'sps-fetcher-edit-page',
+					 'sps_fetcher_edit_page');
 }
 
-function sps_fetcher_edit_sps() {
-	$hidden_field_name = 'spsf_hidden';
+function _create_new_sps() {
+	global $ACCEPTABLE_KEYS;
+	$sps_values = array();
+	foreach ($ACCEPTABLE_KEYS as $key) {
+		$sps_value[$key] = '';
+	};
+	$sps_value[$id] = 0;
+	echo('<div class="updated"><p><strong>');
+	echo('new');
+	echo('</strong></p></div>');
+	include(dirname(__FILE__) . "/edit_page.php");
+}
 
-	$sps_values = array(
-		'id' => 0,
-		'slug' => '',
-		'title' => '',
-		'description' => '',
-		'source_type' => '',
-		'template' => '',
-		'options' => ''
-	);
-	
+function _edit_sps() {
+	$slug = $_GET[ "slug" ];
+	$sps_values = get_sps($slug);
+	echo('<div class="updated"><p><strong>');
+	echo('edit');
+	echo('</strong></p></div>');
+	include(dirname(__FILE__) . "/edit_page.php");
+}
+
+function _add_sps($sheet) {
+	if (add_sps($sheet)) {
+		echo('<div class="updated"><p><strong>');
+		echo('settings added.');
+		echo('</strong></p></div>');
+		$sps_values = get_sps($sheet['slug']);
+	} else {
+		echo('<div class="updated"><p><strong>');
+		echo('insert failed.');
+		echo('</strong></p></div>');
+		$sps_values = $sheet;
+	}
+	include(dirname(__FILE__) . "/edit_page.php");
+}
+
+function _update_sps($sheet) {
+	if (update_sps($sheet)) {
+		echo('<div class="updated"><p><strong>');
+		echo('settings saved.');
+		echo('</strong></p></div>');
+		$sps_values = get_sps($sheet['slug']);
+	} else {
+		echo('<div class="updated"><p><strong>');
+		echo('save failed.');
+		echo('</strong></p></div>');
+		$sps_values = $sheet;
+	}
+	include(dirname(__FILE__) . "/edit_page.php");
+}
+
+function _preview_sps($sheet) {
+	$sps_values = $sheet;
+	echo('<div class="updated"><p><strong>');
+	echo('preview');
+	echo('</strong></p></div>');
+
+	$preview = $sheet["template_header"] . create_preview($sheet) . $sheet["template_footer"];
+	// $preview = htmlentities($preview);
+	include(dirname(__FILE__) . "/edit_page.php");
+}
+
+
+function sps_fetcher_edit_page() {
+	global $ACCEPTABLE_KEYS;
+	global $HIDDEN_FIELD_NAME;
+
 	if( isset($_GET[ "action" ]) && $_GET[ "action" ] == 'edit' ) {
-		$slug = $_GET[ "slug" ];
-		$sps_values = get_sps($slug);
+		_edit_sps();
+		return;
 	}
 
-	if( isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'Y' ) {
-		$acceptable_keys = explode(" ", "id slug title description source_type source template options");
+	if( isset($_POST[ $HIDDEN_FIELD_NAME ]) && $_POST[ $HIDDEN_FIELD_NAME ] == 'Y' ) {
 		$sheet = array();
-		foreach ($acceptable_keys as $key) {
+		foreach ($ACCEPTABLE_KEYS as $key) {
 			$value = stripslashes($_POST[$key]);
 			if ($value) {
 				$sheet[$key] = $value;
 			}
 		}
-		if ($sheet["id"] == 0) {
-			if (add_sps($sheet)) {
-				echo('<div class="updated"><p><strong>');
-				echo('settings added.');
-				echo('</strong></p></div>');
-				$sps_values = get_sps($sheet['slug']);
-			} else {
-				echo('<div class="updated"><p><strong>');
-				echo('insert failed.');
-				echo('</strong></p></div>');
-				$sps_values = $sheet;
-			}
-		} else {
-			if (update_sps($sheet)) {
-				echo('<div class="updated"><p><strong>');
-				echo('settings saved.');
-				echo('</strong></p></div>');
-				$sps_values = get_sps($sheet['slug']);
-			} else {
-				echo('<div class="updated"><p><strong>');
-				echo('save failed.');
-				echo('</strong></p></div>');
-				$sps_values = $sheet;
-			}
+
+		if ($_POST["preview"]) {
+			_preview_sps($sheet);
+			return;
+		} 
+		if ($_POST["id"] == 0) {
+			_add_sps($sheet);
+			return;
 		}
+		_update_sps($sheet);
+		return;
 	}
-	include(dirname(__FILE__) . "/edit_page.php");
+
+	_create_new_sps();
+	return;
 }
 
 function sps_fetcher_options() {
-	$hidden_field_name = 'spsf_hidden';
+	global $ACCEPTABLE_KEYS;
+	global $HIDDEN_FIELD_NAME;
+
 	$option_name_of = array();
 	$option_value_of = array();
 
@@ -125,7 +192,7 @@ function sps_fetcher_options() {
 		$option_value_of[$opt_field] = get_option($opt_id);
 	}
 	*/
-	if( isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'Y' ) {
+	if( isset($_POST[ $HIDDEN_FIELD_NAME ]) && $_POST[ $HIDDEN_FIELD_NAME ] == 'Y' ) {
 		foreach ($option_name_of as $opt_field => $opt_id) {
 			update_option($opt_id, stripslashes($_POST[$opt_field]) );
 			$option_value_of[$opt_field] = stripslashes($_POST[$opt_field]);
