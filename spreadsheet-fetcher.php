@@ -45,7 +45,7 @@ function spsf_show( $atts ) {
 	$parser->load($sheet["source"], $key_row, $start_row, $end_row);
 	$result[] = $sheet["template_header"];
 	$result[] = $parser->render($sheet["template_body"]);
-	$result[] = $sheet["template_fotter"];
+	$result[] = $sheet["template_footer"];
 	return implode("\n", $result);
 }
 
