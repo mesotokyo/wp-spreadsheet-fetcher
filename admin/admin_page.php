@@ -23,13 +23,14 @@ EOF;
 	foreach ($sheets as $sheet) {
 		$edit_url = admin_url("admin.php?page=sps-fetcher-edit-page&action=edit&slug=$sheet->slug");
 		$delete_url = admin_url("admin.php?page=sps-fetcher-edit-page&action=delete&slug=$sheet->slug");
+		$duplicate_url = admin_url("admin.php?page=sps-fetcher-edit-page&action=duplicate&slug=$sheet->slug");
 
 		$row = <<<EOF
 <tr>
   <td>$sheet->slug</td>
   <td>$sheet->title</td>
   <td>$sheet->description</td>
-  <td><A href="$edit_url">edit</a> <a href="$delete_url">delete</a></td>
+  <td><A href="$edit_url">edit</a> <a href="$delete_url">delete</a> <a href="$duplicate_url">duplicate</a></td>
 </tr>
 EOF;
 		echo($row);

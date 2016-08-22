@@ -11,10 +11,28 @@ function _create_new_sps() {
 	foreach (acceptable_keys() as $key) {
 		$sps_value[$key] = '';
 	};
-	$sps_value[$id] = 0;
+	$sps_value["id"] = 0;
 	echo('<div class="updated"><p><strong>');
 	echo('new');
 	echo('</strong></p></div>');
+	include(dirname(__FILE__) . "/edit_page.php");
+}
+
+function _duplicate_sps($slug) {
+	$sps_values = get_sps($slug);
+	if ($sps_values) {
+		echo('<div class="updated"><p><strong>');
+		echo('duplicated, nut not saved.');
+		echo('</strong></p></div>');
+	} else {
+		foreach (acceptable_keys() as $key) {
+			$sps_values[$key] = '';
+		};
+		echo('<div class="updated"><p><strong>');
+		echo('error: no spreadsheet');
+		echo('</strong></p></div>');
+	}
+	$sps_values["id"] = 0;
 	include(dirname(__FILE__) . "/edit_page.php");
 }
 
@@ -73,6 +91,14 @@ function sps_fetcher_edit_page() {
 	if( isset($_GET[ "action" ]) && $_GET[ "action" ] == 'edit' ) {
 		_edit_sps();
 		return;
+	}
+
+	if( isset($_GET[ "action" ]) && $_GET[ "action" ] == 'duplicate' ) {
+		$src = $_GET[ "slug" ];
+		if ($src) {
+			_duplicate_sps($src);
+			return;
+		}
 	}
 
 	if( isset($_POST[ $HIDDEN_FIELD_NAME ]) && $_POST[ $HIDDEN_FIELD_NAME ] == 'Y' ) {
