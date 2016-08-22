@@ -11,20 +11,16 @@
 require_once (dirname(__FILE__) . '/admin/admin.php');
 require_once (dirname(__FILE__) . '/parser/tsv_parser.php');
 require_once (dirname(__FILE__) . '/parser/common.php');
+require_once (dirname(__FILE__) . '/model/spreadsheet.php');
 
-// [spsf_show slug="hogehoge"]
+// shortcode: [spsf_show slug="hogehoge"]
 add_shortcode('spsf_show', 'spsf_show');
 
 function spsf_show( $atts ) {
 	if (!$atts["slug"]) {
 		return "<span class='spsf_error'>error: no slug.</span>";
 	}
-	global $wpdb;
-	$table_name = $wpdb->prefix . "spsfetcher";
-
-	$slug = $atts["slug"];
-	$sql = "SELECT * from $table_name WHERE slug = '$slug'";
-	$sheet = $wpdb->get_row($sql, ARRAY_A);
+	$sheet = get_sps($atts["slug"]);
 
 	if (!$sheet) {
 		return "<span class='spsf_error'>error: no sheet for slug: $slug.</span>";

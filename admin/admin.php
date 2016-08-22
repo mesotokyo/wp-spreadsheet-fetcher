@@ -1,64 +1,14 @@
 <?php
-
-$ACCEPTABLE_KEYS = explode(" ", "id slug title description source_type source template_header template_body template_footer options");
-$ACCEPTABLE_KEYS_NOID = explode(" ", "slug title description source_type source template_header template_body template_footer options");
 $HIDDEN_FIELD_NAME = 'spsf_hidden';
 
 require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/tsv_parser.php" );
 require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/common.php" );
+require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/model/spreadsheet.php" );
 
-function create_preview($sheet) {
-	return render_sps($sheet);
-}
-
-function add_sps($sheet) {
-	global $ACCEPTABLE_KEYS_NOID;
-	global $wpdb;
-	$table_name = $wpdb->prefix . "spsfetcher";
-	$data = array();
-
-	// check integrity
-	foreach ($ACCEPTABLE_KEYS_NOID as $key) {
-		if($sheet[$key]) {
-			$data[$key] = $sheet[$key];
-		}
-	}
-	$result = $wpdb->insert($table_name, $data);
-	return $result;
-}
-
-function update_sps($sheet) {
-	global $ACCEPTABLE_KEYS_NOID;
-	global $wpdb;
-	$table_name = $wpdb->prefix . "spsfetcher";
-	$data = array();
-
-	// check integrity
-	foreach ($ACCEPTABLE_KEYS_NOID as $key) {
-		if($sheet[$key]) {
-			$data[$key] = $sheet[$key];
-		}
-	}
-
-	$where = array( 'id' => $sheet["id"] );
-	$result = $wpdb->update($table_name, $data, $where);
-	return $result;
-}
-
-function get_sps($slug) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . "spsfetcher";
-
-	$sql = "SELECT * from $table_name WHERE slug = '$slug'";
-	$sps = $wpdb->get_row($sql, ARRAY_A);
-
-	return $sps;
-}
 
 function _create_new_sps() {
-	global $ACCEPTABLE_KEYS;
 	$sps_values = array();
-	foreach ($ACCEPTABLE_KEYS as $key) {
+	foreach (acceptable_keys() as $key) {
 		$sps_value[$key] = '';
 	};
 	$sps_value[$id] = 0;
@@ -113,13 +63,11 @@ function _preview_sps($sheet) {
 	echo('preview');
 	echo('</strong></p></div>');
 
-	$preview = create_preview($sheet);
+	$preview = render_sps($sheet);
 	include(dirname(__FILE__) . "/edit_page.php");
 }
 
-
 function sps_fetcher_edit_page() {
-	global $ACCEPTABLE_KEYS;
 	global $HIDDEN_FIELD_NAME;
 
 	if( isset($_GET[ "action" ]) && $_GET[ "action" ] == 'edit' ) {
@@ -129,7 +77,7 @@ function sps_fetcher_edit_page() {
 
 	if( isset($_POST[ $HIDDEN_FIELD_NAME ]) && $_POST[ $HIDDEN_FIELD_NAME ] == 'Y' ) {
 		$sheet = array();
-		foreach ($ACCEPTABLE_KEYS as $key) {
+		foreach (acceptable_keys() as $key) {
 			$value = stripslashes($_POST[$key]);
 			if ($value) {
 				$sheet[$key] = $value;
@@ -153,17 +101,8 @@ function sps_fetcher_edit_page() {
 }
 
 function sps_fetcher_options() {
-	global $ACCEPTABLE_KEYS;
 	global $HIDDEN_FIELD_NAME;
 
-	$option_name_of = array();
-	$option_value_of = array();
-
-	/*
-	foreach ($option_name_of as $opt_field => $opt_id) {
-		$option_value_of[$opt_field] = get_option($opt_id);
-	}
-	*/
 	if( isset($_POST[ $HIDDEN_FIELD_NAME ]) && $_POST[ $HIDDEN_FIELD_NAME ] == 'Y' ) {
 		foreach ($option_name_of as $opt_field => $opt_id) {
 			update_option($opt_id, stripslashes($_POST[$opt_field]) );
