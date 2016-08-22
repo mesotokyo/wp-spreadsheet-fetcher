@@ -4,23 +4,11 @@ $ACCEPTABLE_KEYS = explode(" ", "id slug title description source_type source te
 $ACCEPTABLE_KEYS_NOID = explode(" ", "slug title description source_type source template_header template_body template_footer options");
 $HIDDEN_FIELD_NAME = 'spsf_hidden';
 
-require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/tsv_parser.php" );
+require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/tsv_parser.php" );
+require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/common.php" );
 
 function create_preview($sheet) {
-	$parser = new TSVParser();
-	$opts = array();
-	$row_opts = explode(',', $sheet["options"]);
-	foreach($row_opts as $opt) {
-		$kv = explode('=', $opt, 2);
-		$opts[$kv[0]] = $kv[1];
-	}
-	$key_row = $opts["key"] ? $opts["key"] : 0;
-	$start_row = $opts["start"] ? $opts["start"] : 0;
-	$end_row = $opts["end"] ? $opts["end"] : 0;
-		
-	$parser->load($sheet["source"], $key_row, $start_row, $end_row);
-	$result = $parser->render($sheet["template_body"]);
-	return $result;
+	return render_sps($sheet);
 }
 
 function add_sps($sheet) {
@@ -65,21 +53,6 @@ function get_sps($slug) {
 	$sps = $wpdb->get_row($sql, ARRAY_A);
 
 	return $sps;
-}
-
-function sps_fetcher_menu() {
-	add_menu_page('Spreadsheet Fetcher',
-					 'Spreadsheet',
-					 'manage_options',
-					 'sps-fetcher-options',
-					 'sps_fetcher_options');
-
-	add_submenu_page('sps-fetcher-options',
-					 'Add Spreadsheet',
-					 'Add Spreadsheet',
-					 'manage_options',
-					 'sps-fetcher-edit-page',
-					 'sps_fetcher_edit_page');
 }
 
 function _create_new_sps() {
@@ -140,8 +113,7 @@ function _preview_sps($sheet) {
 	echo('preview');
 	echo('</strong></p></div>');
 
-	$preview = $sheet["template_header"] . create_preview($sheet) . $sheet["template_footer"];
-	// $preview = htmlentities($preview);
+	$preview = create_preview($sheet);
 	include(dirname(__FILE__) . "/edit_page.php");
 }
 
