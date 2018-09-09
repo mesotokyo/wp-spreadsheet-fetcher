@@ -13,11 +13,13 @@ $opts = array(
 $parser->load('./test.tsv', $opts);
 
 $template = '$$ foo:$foo bar:${bar}_$moge $hoge';
-$template2 = '$$ foo:$foo bar:${bar}_$moge $hoge';
+$template2 = '$$ $foo - ${@if $foo}foo:$foo${@end} bar:${bar}_$moge $hoge${@if $boo}$boo${@end}';
 
 $result = $parser->render($template);
-//print_r($result);
+print($result);
+print("\n");
 
 $result = $parser->render_header($template2);
-print_r($result);
+print($result);
+print("\n");
 

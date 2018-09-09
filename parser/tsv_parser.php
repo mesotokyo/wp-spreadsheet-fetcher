@@ -1,4 +1,5 @@
 <?php
+require_once (dirname(__FILE__) . '/template.php');
 
 class TSVParser {
 	function __construct() {
@@ -58,13 +59,17 @@ class TSVParser {
 	}
 
 	function render_header($template) {
-        return $this->_render($this->headers, $template);
+        $renderer = new MiniTemplate();
+        // return $this->_render($this->headers, $template);
+        return $renderer->render($this->headers, $template);
     }
 
 	function render($template) {
 		$result = array();
+        $renderer = new MiniTemplate();
 		foreach ($this->parsed as $item) {
-			$result[] = $this->_render($item, $template);
+			//$result[] = $this->_render($item, $template);
+            $result[] = $renderer->render($item, $template);
 		}
 		return implode("\n", $result);
 	}
