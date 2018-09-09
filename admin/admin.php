@@ -1,9 +1,9 @@
 <?php
 $HIDDEN_FIELD_NAME = 'spsf_hidden';
 
-require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/tsv_parser.php" );
-require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/parser/common.php" );
-require_once(WP_PLUGIN_DIR . "/spreadsheet-fetcher/model/spreadsheet.php" );
+require_once(WP_PLUGIN_DIR . "/wp-spft/parser/tsv_parser.php" );
+require_once(WP_PLUGIN_DIR . "/wp-spft/parser/common.php" );
+require_once(WP_PLUGIN_DIR . "/wp-spft/model/spreadsheet.php" );
 
 
 function _create_new_sps() {
